@@ -1,4 +1,4 @@
--- simple db table containing for Order schema
+-- simple db table containing Order schema
 CREATE TABLE IF NOT EXISTS orders (
     order_id SERIAL PRIMARY KEY,
     user_id VARCHAR(50) NOT NULL,
