@@ -22,23 +22,27 @@ Due to the complexity of the challenge and the time limitations I decided to foc
 # Project architecture and structure
 
 Following my research I decided to use this structure for my project following the **Producer-Consumer** pattern:
-
+```.
+├── Dockerfile
+├── Dockerfile.spark
+├── README.md
+├── docker-compose.yml
+├── requirements.txt
 └── src
+    ├── __init__.py
+    ├── config.py
     ├── cdc
     │   └── poller.py
-    │   
-    ├── config.py
     ├── database
     │   ├── data_generator.py
     │   └── init.sql
-    │ 
-    ├── etl
-    │   ├── __init__.py
-    │   ├── main.py
-    │   ├── schemas.py
-    │   ├── settings.py
-    │   └── transformations.py
-    └── __init__.py
+    └── etl
+        ├── __init__.py
+        ├── main.py
+        ├── schemas.py
+        ├── settings.py
+        └── transformations.py
+```
 
 This structure emphasize **Modularity**, which is essential for improving code **Readability** and permitting a seamless project **Scalability**.
 
@@ -64,6 +68,10 @@ Studying the requirements for building an effective pipeline I needed to define 
 
 **N.B.**:
 - The `config.py` file is located directly in the source folder of the project, this respect the **the flatter the better** rule of python, but can be nested and reorganized following the project scalability needs, to better handle the config files.
+
+# Architecture diagram
+
+![Untitled diagram-2026-01-29-160821](https://github.com/user-attachments/assets/d5e154b7-e502-4bb2-82a2-00727df60fcd)
 
 # Database
 
