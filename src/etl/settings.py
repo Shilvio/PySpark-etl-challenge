@@ -1,0 +1,12 @@
+from src.config import Config
+
+KAFKA_BOOTSTRAP_SERVERS = Config.KAFKA_BOOTSTRAP_SERVERS[0]
+KAFKA_TOPIC = Config.KAFKA_TOPIC
+TAX_RATE = Config.TAX_RATE
+APP_NAME = Config.SPARK_APP_NAME
+SHUFFLE_PARTITIONS = Config.SPARK_SHUFFLE_PARTITIONS
+
+# hardcoded spark costants
+SPARK_PACKAGES = "org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0"
+SHUFFLE_PARTITIONS = "2"
+STARTING_OFFSETS = "earliest"

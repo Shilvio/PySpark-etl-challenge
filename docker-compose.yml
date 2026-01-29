@@ -1,14 +1,13 @@
-version: '3'
 services:
   # Postgres DB
   postgres:
     image: postgres:13
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: challenge_db
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     ports:
-      - "5432:5432"
+      - "${DB_PORT}:5432"
     volumes:
       - ./src/database/init.sql:/docker-entrypoint-initdb.d/init.sql
 
@@ -22,7 +21,7 @@ services:
   # Kafka
   kafka:
     image: confluentinc/cp-kafka:7.4.0
-    container_name: aladia_kafka
+    container_name: kafka
     depends_on:
       - zookeeper
     ports:

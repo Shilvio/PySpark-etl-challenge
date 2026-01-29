@@ -3,6 +3,7 @@ import random
 import psycopg2
 from faker import Faker
 from datetime import datetime
+from src.config import Config
 
 # Db config
 DB_HOST = "localhost"
@@ -15,14 +16,9 @@ fake = Faker()
 
 def get_db_connection():
     try:
-        conn = psycopg2.connect(
-            host=DB_HOST,
-            database=DB_NAME,
-            user=DB_USER,
-            password=DB_PASS,
-            port=DB_PORT
-        )
+        conn = psycopg2.connect(**Config.DB_CONFIG)
         return conn
+        
     except Exception as e:
         print(f"DB connection error: {e}")
         return None
