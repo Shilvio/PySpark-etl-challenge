@@ -5,12 +5,7 @@ from faker import Faker
 from datetime import datetime
 from src.config import Config
 
-# Db config
-DB_HOST = "localhost"
-DB_NAME = "challenge_db"
-DB_USER = "user"
-DB_PASS = "password"
-DB_PORT = "5432"
+
 
 fake = Faker()
 

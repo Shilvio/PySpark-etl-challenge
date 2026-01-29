@@ -1,0 +1,22 @@
+FROM apache/spark:3.5.0
+
+USER root
+
+WORKDIR /app
+
+RUN apt-get update && \
+    apt-get install -y python3-pip gcc libpq-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+RUN mkdir -p /home/spark/.ivy2 && \
+    chown -R 185:185 /home/spark
+
+COPY src/ src/
+
+ENV PYTHONPATH=/app
+
+USER 185

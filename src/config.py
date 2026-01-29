@@ -11,7 +11,14 @@ class Config:
         "database": os.getenv("DB_NAME", "challenge_db"),
         "user": os.getenv("DB_USER", "user"),
         "password": os.getenv("DB_PASSWORD", "password"),
-        "port": os.getenv("DB_PORT", "5432")
+        "port": os.getenv("DB_PORT_SOURCE", "5432")
+    }
+    DEST_DB_CONFIG = {
+        "url": f"jdbc:postgresql://{os.getenv('DB_HOST_DEST', 'localhost')}:{os.getenv('DB_PORT_DEST', '5433')}/{os.getenv('DB_NAME', 'challenge_db')}",
+        "user": os.getenv("DB_USER", "user"),
+        "password": os.getenv("DB_PASSWORD", "password"),
+        "driver": "org.postgresql.Driver",
+        "table": "processed_orders"
     }
 
     # Kafka
@@ -35,3 +42,4 @@ KAFKA_BOOTSTRAP_SERVERS = Config.KAFKA_BOOTSTRAP_SERVERS
 KAFKA_TOPIC = Config.KAFKA_TOPIC
 SPARK_APP_NAME = Config.SPARK_APP_NAME
 SPARK_SHUFFLE_PARTITIONS = Config.SPARK_SHUFFLE_PARTITIONS
+DEST_DB_CONFIG = Config.DEST_DB_CONFIG

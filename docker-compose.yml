@@ -1,18 +1,42 @@
 services:
-  # Postgres DB
-  postgres:
+  # Postgres Source DB
+  postgres_source:
+    container_name: sourceDB
     image: postgres:13
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     ports:
-      - "${DB_PORT}:5432"
+      - "${DB_PORT_SOURCE}:${DB_INTERNAL_PORT}"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     volumes:
       - ./src/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    
+
+  # Postgres Source DB
+  postgres_dest:
+    container_name: destinationDB
+    image: postgres:13
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "${DB_PORT_DEST}:${DB_INTERNAL_PORT}" 
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # Zookeeper
   zookeeper:
+    container_name: zookeeper
     image: confluentinc/cp-zookeeper:latest
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
@@ -26,6 +50,12 @@ services:
       - zookeeper
     ports:
       - "9092:9092"
+    healthcheck:
+      test: nc -z localhost 9092 || exit -1
+      start_period: 15s
+      interval: 5s
+      timeout: 10s
+      retries: 10
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -35,3 +65,62 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+  
+  # Data generator
+  data_generator:
+    container_name: py_data_generator
+    build: .
+    command: python -m src.database.data_generator
+    depends_on:
+      postgres_source:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      DB_HOST: postgres_source
+      DB_PORT: ${DB_INTERNAL_PORT} 
+
+  # CDC Poller
+  cdc_poller:
+    container_name: py_cdc
+    build: .
+    command: python -m src.cdc.poller
+    depends_on:
+      postgres_source:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      DB_HOST: postgres_source
+      DB_PORT: ${DB_INTERNAL_PORT}
+      KAFKA_BROKER: kafka:29092
+
+  # Spark ETL
+  spark-etl:
+    container_name: spark_job
+    build:
+      context: .
+      dockerfile: Dockerfile.spark
+    restart: on-failure
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres_dest:
+        condition: service_started
+    environment:
+      - DB_HOST=postgres_source
+      - DB_PORT=${DB_INTERNAL_PORT}
+      - DB_HOST_DEST=destinationDB
+      - DB_PORT_DEST=${DB_INTERNAL_PORT}
+      - KAFKA_BROKER=kafka:29092
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - KAFKA_TOPIC=${KAFKA_TOPIC}
+      - TAX_RATE=${TAX_RATE}
+      - APP_NAME=${APP_NAME}
+      - SPARK_SHUFFLE_PARTITIONS=${SPARK_SHUFFLE_PARTITIONS}
+    command: >
+      /opt/spark/bin/spark-submit 
+      --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0,org.postgresql:postgresql:42.6.0
+      src/etl/main.py

@@ -5,6 +5,7 @@ KAFKA_TOPIC = Config.KAFKA_TOPIC
 TAX_RATE = Config.TAX_RATE
 APP_NAME = Config.SPARK_APP_NAME
 SHUFFLE_PARTITIONS = Config.SPARK_SHUFFLE_PARTITIONS
+DEST_DB_CONFIG = Config.DEST_DB_CONFIG
 
 # hardcoded spark costants
 SPARK_PACKAGES = "org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0"
